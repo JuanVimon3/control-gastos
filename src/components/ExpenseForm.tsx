@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DraftExpense, Value } from "../types";
 import { categories } from "../data/categories";
 import DatePicker from 'react-date-picker';
@@ -10,7 +10,7 @@ import { useBudget } from "../hooks/useBudget";
 
 export default function ExpenseForm() {
 
-  const [expense, setExpense] = useState <DraftExpense>({
+  const [expense, setExpense] = useState<DraftExpense>({
     amount: 0,
     expenseName: '',
     category: '',
@@ -18,15 +18,15 @@ export default function ExpenseForm() {
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
-    const {name, value} = e.target
+    const { name, value } = e.target
     const isAmountField = ['amount'].includes(name)
     setExpense({
       ...expense,
-      [name] : isAmountField ? Number(value) : value
+      [name]: isAmountField ? Number(value) : value
     })
   }
 
-  const handleChangeDate = (value : Value) => {
+  const handleChangeDate = (value: Value) => {
     setExpense({
       ...expense,
       date: value
@@ -34,29 +34,42 @@ export default function ExpenseForm() {
   }
 
   const [error, setError] = useState('');
-  const {dispatch} = useBudget()
+  const { dispatch, state } = useBudget();
+
+  useEffect(() => {
+    if (state.editingId) {
+      const editingExpense = state.expenses.filter(currentExpense => currentExpense.id === state.editingId)[0]
+      setExpense(editingExpense)
+    }
+  }, [state.editingId])
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     //Validate
-    if(Object.values(expense).includes('')){
+    if (Object.values(expense).includes('')) {
       setError('Todos los campos son obligatorios')
       return
     }
 
-   //Agregar un nuevo gasto
+    //Agregar un nuevo gasto
 
-   dispatch({type: 'add-expense', payload: {expense}})
+    if(state.editingId){
+      dispatch({type: 'update-expense', payload: {expense: {id: state.editingId, ...expense}}})
+    } else{
+      dispatch({ type: 'add-expense', payload: { expense } })
+    }
 
-   //Reiniciar state
+    
 
-   setExpense({
-    amount: 0,
-    expenseName: '',
-    category: '',
-    date: new Date()
-   })
+    //Reiniciar state
+
+    setExpense({
+      amount: 0,
+      expenseName: '',
+      category: '',
+      date: new Date()
+    })
   }
 
   return (
@@ -115,18 +128,18 @@ export default function ExpenseForm() {
         </select>
 
         <div className="flex flex-col gap-2">
-        <label htmlFor="amount" className="text-xl">
-          Fecha gasto:
-        </label>
+          <label htmlFor="amount" className="text-xl">
+            Fecha gasto:
+          </label>
           <DatePicker
-            className= "bg-slate-100 p-2 border-0"
+            className="bg-slate-100 p-2 border-0"
             value={expense.date}
             onChange={handleChangeDate}
           />
-      </div>
+        </div>
 
-        <input 
-          type="submit" 
+        <input
+          type="submit"
           className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-l-lg"
           value={'Registrar gasto'}
         />

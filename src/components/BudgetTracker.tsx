@@ -1,7 +1,11 @@
+import { useBudget } from "../hooks/useBudget"
 import AmountDisplay from "./AmountDisplay"
 
 
 function BudgetTracker() {
+
+  const { state, remainingBudget, totalExpenses } = useBudget();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
@@ -18,18 +22,18 @@ function BudgetTracker() {
         </button>
 
         <AmountDisplay
-           label="Presupuesto"
-           amount={300}
+          label="Presupuesto"
+          amount={state.budget}
         />
 
         <AmountDisplay
-           label="Disponible"
-           amount={200}
+          label="Disponible"
+          amount={remainingBudget}
         />
 
         <AmountDisplay
-           label="Gastado"
-           amount={100}
+          label="Gastado"
+          amount={totalExpenses}
         />
       </div>
 

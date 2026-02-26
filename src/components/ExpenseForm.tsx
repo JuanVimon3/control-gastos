@@ -34,12 +34,14 @@ export default function ExpenseForm() {
   }
 
   const [error, setError] = useState('');
-  const { dispatch, state } = useBudget();
+  const [previousAmount, setPreviousAmount] = useState(0)
+  const { dispatch, state, remainingBudget} = useBudget();
 
   useEffect(() => {
     if (state.editingId) {
       const editingExpense = state.expenses.filter(currentExpense => currentExpense.id === state.editingId)[0]
       setExpense(editingExpense)
+      setPreviousAmount(editingExpense.amount)
     }
   }, [state.editingId])
 
@@ -49,6 +51,13 @@ export default function ExpenseForm() {
     //Validate
     if (Object.values(expense).includes('')) {
       setError('Todos los campos son obligatorios')
+      return
+    }
+
+    // Validar que no me pase del límite
+
+    if ((expense.amount - previousAmount ) > remainingBudget) {
+      setError('Ese gasto se sale del presupuesto')
       return
     }
 
@@ -70,12 +79,13 @@ export default function ExpenseForm() {
       category: '',
       date: new Date()
     })
+    setPreviousAmount(0)
   }
 
   return (
     <form action="" className="space-y-5" onSubmit={handleSubmit}>
       <legend className="uppercase text-center text-2xl font-black border-b-4 border border-blue-500 py-2">
-        Nuevo gasto
+        {state.editingId ?'Guardar cambios' : 'Nuevo gasto'}
       </legend>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -141,7 +151,7 @@ export default function ExpenseForm() {
         <input
           type="submit"
           className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-l-lg"
-          value={'Registrar gasto'}
+          value= {state.editingId ?'Guardar cambios' : 'Registrar gasto'}
         />
       </div>
 

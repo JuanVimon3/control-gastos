@@ -17,10 +17,20 @@ export type BudgetState = {
     editingId: Expense['id']
 };
 
+const initialBudget = () : number => {
+    const localStorageBudget = localStorage.getItem('budget');
+    return localStorageBudget ? +localStorageBudget : 0
+}
+
+const localStorageExpenses = () : Expense[] => {
+    const localStorageExpenses = localStorage.getItem('expenses');
+    return localStorageExpenses ? JSON.parse(localStorageExpenses) : []
+}
+
 export const initialState: BudgetState = {
-    budget: 0,
+    budget: initialBudget(),
     modal: false,
-    expenses: [],
+    expenses: localStorageExpenses(),
     editingId: ''
 };
 
@@ -53,7 +63,8 @@ export const budgetReducer = (
      if(action.type === 'close-modal') {
         return{
             ...state,
-            modal: false
+            modal: false,
+            editingId: ''
         }
     }
 
@@ -63,7 +74,8 @@ export const budgetReducer = (
         return{
             ...state,
             expenses: [...state.expenses, expense],
-            modal: false
+            modal: false,
+            editingId: ''
         }
     }
 
